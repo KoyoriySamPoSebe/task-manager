@@ -66,4 +66,32 @@ class EmployeeController extends Controller
 
         return response()->json(null, 204);
     }
+
+    public function assignRole(Request $request, int $employeeId)
+    {
+        $validated = $request->validate([
+            'role' => 'required|string|exists:roles,name',
+        ]);
+
+        $employee = $this->employeeService->assignRole($employeeId, $validated['role']);
+
+        return response()->json([
+            'message' => 'Role assigned successfully.',
+            'employee' => new EmployeeResource($employee),
+        ]);
+    }
+
+    public function removeRole(Request $request, int $employeeId)
+    {
+        $validated = $request->validate([
+            'role' => 'required|string|exists:roles,name',
+        ]);
+
+        $employee = $this->employeeService->removeRole($employeeId, $validated['role']);
+
+        return response()->json([
+            'message' => 'Role removed successfully.',
+            'employee' => new EmployeeResource($employee),
+        ]);
+    }
 }
