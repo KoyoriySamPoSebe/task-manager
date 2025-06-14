@@ -1,10 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Employee;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\RateLimiter;
 
 class TaskController extends Controller
 {
@@ -12,12 +17,19 @@ class TaskController extends Controller
 
     public function __construct(TaskService $taskService)
     {
+        $this->middleware('throttle:2,1')->only('store');
         $this->taskService = $taskService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json($this->taskService->getAll());
+        $filters       = $request->only(['status', 'assigned_to', 'start_date', 'end_date', 'sort_by', 'order']);
+        $pagination    = $request->get('pagination', true);
+        $groupByStatus = $request->get('group_by_status', false);
+
+        $tasks = $this->taskService->getAll($filters, $pagination, $groupByStatus);
+
+        return response()->json($tasks);
     }
 
     public function store(Request $request)
@@ -29,12 +41,14 @@ class TaskController extends Controller
         ]);
 
         $task = $this->taskService->create($validated);
+
         return response()->json($task, 201);
     }
 
     public function show(int $id)
     {
         $task = $this->taskService->find($id);
+
         return response()->json($task);
     }
 
@@ -47,12 +61,14 @@ class TaskController extends Controller
         ]);
 
         $this->taskService->update($id, $validated);
+
         return response()->json(null, 204);
     }
 
     public function destroy(int $id)
     {
         $this->taskService->delete($id);
+
         return response()->json(null, 204);
     }
 
@@ -63,6 +79,7 @@ class TaskController extends Controller
         ]);
 
         $employeeId = $request->input('employee_id');
+
         $this->taskService->assignEmployee($taskId, $employeeId);
 
         return response()->json(null, 204);
@@ -71,8 +88,7 @@ class TaskController extends Controller
     public function removeEmployee(int $taskId)
     {
         $this->taskService->removeEmployee($taskId);
+
         return response()->json(null, 204);
     }
 }
-
-

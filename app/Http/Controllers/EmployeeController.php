@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
@@ -16,9 +18,13 @@ class EmployeeController extends Controller
         $this->employeeService = $employeeService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $employees = $this->employeeService->getAll();
+        $filters    = $request->only(['status', 'start_date', 'end_date', 'sort_by', 'order']);
+        $pagination = $request->get('pagination', true);
+
+        $employees = $this->employeeService->getAll($filters, $pagination);
+
         return EmployeeResource::collection($employees);
     }
 
@@ -31,12 +37,14 @@ class EmployeeController extends Controller
         ]);
 
         $employee = $this->employeeService->create($validated);
+
         return response()->json(new EmployeeResource($employee), 201);
     }
 
     public function show(int $id)
     {
         $employee = $this->employeeService->find($id);
+
         return response()->json(new EmployeeResource($employee));
     }
 
@@ -47,17 +55,15 @@ class EmployeeController extends Controller
             'status' => 'required|in:working,on_leave',
         ]);
 
-        $employee = $this->employeeService->update($id, $validated);
-        return response()->json(new EmployeeResource($employee));
+        $this->employeeService->update($id, $validated);
+
+        return response()->json(null, 204);
     }
 
     public function destroy(int $id)
     {
         $this->employeeService->delete($id);
+
         return response()->json(null, 204);
     }
 }
-
-
-
-
