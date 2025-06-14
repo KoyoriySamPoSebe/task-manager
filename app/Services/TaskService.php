@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
+use App\Models\Employee;
 use App\Repositories\TaskRepository;
+use Illuminate\Validation\ValidationException;
 
 class TaskService
 {
@@ -41,13 +45,17 @@ class TaskService
     public function assignEmployee(int $taskId, int $employeeId)
     {
         $task = $this->taskRepository->find($taskId);
-        if ($task) {
-            $task->employees()->syncWithoutDetaching([$employeeId]);
-        } else {
-            throw new \Exception('Task not found');
-        }
-    }
 
+        $employee = Employee::findOrFail($employeeId);
+
+        if ($employee->status === 'on_leave') {
+            throw new ValidationException('Employee is on leave and cannot be assigned a task.');
+        }
+
+        $task->employees()->syncWithoutDetaching([$employeeId]);
+
+        return $task;
+    }
 
     public function removeEmployee(int $taskId)
     {
@@ -55,4 +63,3 @@ class TaskService
         $task->employees()->detach();
     }
 }
-

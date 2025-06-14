@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Repositories\EmployeeRepository;
@@ -38,5 +40,3 @@ class EmployeeService
         return $this->employeeRepository->find($id);
     }
 }
-
-
