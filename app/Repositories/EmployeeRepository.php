@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Models\Employee;
 use App\Interfaces\RepositoryInterface;
+use Spatie\Permission\Models\Role;
 
 class EmployeeRepository implements RepositoryInterface
 {
@@ -54,5 +55,23 @@ class EmployeeRepository implements RepositoryInterface
         Employee::where('id', $id)->delete();
 
         return true;
+    }
+
+    public function assignRole(int $employeeId, string $roleName)
+    {
+        $employee = Employee::findOrFail($employeeId);
+
+        $employee->assignRole($roleName);
+
+        return $employee->load('roles');
+    }
+
+    public function removeRole(int $employeeId, string $roleName)
+    {
+        $employee = Employee::findOrFail($employeeId);
+
+        $employee->removeRole($roleName);
+
+        return $employee->load('roles');
     }
 }

@@ -39,4 +39,14 @@ class EmployeeService
     {
         return $this->employeeRepository->find($id);
     }
+
+    public function assignRole(int $employeeId, string $roleName)
+    {
+        return $this->employeeRepository->assignRole($employeeId, $roleName);
+    }
+
+    public function removeRole(int $employeeId, string $roleName)
+    {
+        return $this->employeeRepository->removeRole($employeeId, $roleName);
+    }
 }
