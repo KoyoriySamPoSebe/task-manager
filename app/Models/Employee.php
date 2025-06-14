@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Traits\HasRoles;
@@ -10,6 +11,7 @@ class Employee extends Model
 {
     use HasFactory;
     use HasRoles;
+    use Notifiable;
 
     protected $guard_name = 'api';
 
