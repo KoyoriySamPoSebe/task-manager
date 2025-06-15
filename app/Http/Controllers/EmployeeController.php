@@ -7,28 +7,29 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Services\EmployeeService;
 use App\Http\Resources\EmployeeResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    protected $employeeService;
+    protected EmployeeService $employeeService;
 
     public function __construct(EmployeeService $employeeService)
     {
         $this->employeeService = $employeeService;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $filters    = $request->only(['status', 'start_date', 'end_date', 'sort_by', 'order']);
         $pagination = $request->get('pagination', true);
 
         $employees = $this->employeeService->getAll($filters, $pagination);
 
-        return EmployeeResource::collection($employees);
+        return response()->json(EmployeeResource::collection($employees));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required',
@@ -41,14 +42,14 @@ class EmployeeController extends Controller
         return response()->json(new EmployeeResource($employee), 201);
     }
 
-    public function show(int $id)
+    public function show(int $id): JsonResponse
     {
         $employee = $this->employeeService->find($id);
 
         return response()->json(new EmployeeResource($employee));
     }
 
-    public function update(Request $request, int $id)
+    public function update(Request $request, int $id): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required',
@@ -60,14 +61,14 @@ class EmployeeController extends Controller
         return response()->json(null, 204);
     }
 
-    public function destroy(int $id)
+    public function destroy(int $id): JsonResponse
     {
         $this->employeeService->delete($id);
 
         return response()->json(null, 204);
     }
 
-    public function assignRole(Request $request, int $employeeId)
+    public function assignRole(Request $request, int $employeeId): JsonResponse
     {
         $validated = $request->validate([
             'role' => 'required|string|exists:roles,name',
@@ -81,7 +82,7 @@ class EmployeeController extends Controller
         ]);
     }
 
-    public function removeRole(Request $request, int $employeeId)
+    public function removeRole(Request $request, int $employeeId): JsonResponse
     {
         $validated = $request->validate([
             'role' => 'required|string|exists:roles,name',

@@ -16,7 +16,6 @@ class TaskFactory extends Factory
             'title' => $this->faker->sentence,
             'description' => $this->faker->text,
             'status' => $this->faker->randomElement(['to_do', 'in_progress', 'done']),
-            'employee_id' => $this->faker->randomElement(Employee::pluck('id')->toArray()), // случайный сотрудник
         ];
     }
 }

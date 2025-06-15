@@ -7,10 +7,12 @@ namespace App\Repositories;
 use App\Models\Employee;
 use App\Interfaces\RepositoryInterface;
 use Spatie\Permission\Models\Role;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EmployeeRepository implements RepositoryInterface
 {
-    public function getAll(array $filters = [], $pagination = true)
+    public function getAll(array $filters = [], bool $pagination = true): Collection|LengthAwarePaginator
     {
         $query = Employee::query();
 
@@ -33,43 +35,41 @@ class EmployeeRepository implements RepositoryInterface
         return $query->get();
     }
 
-    public function find(int $id)
+    public function find(int $id): Employee
     {
         return Employee::findOrFail($id);
     }
 
-    public function create(array $data)
+    public function create(array $data): Employee
     {
         return Employee::create($data);
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): bool
     {
         Employee::where('id', $id)->update($data);
 
         return true;
     }
 
-    public function delete(int $id)
+    public function delete(int $id): bool
     {
         Employee::where('id', $id)->delete();
 
         return true;
     }
 
-    public function assignRole(int $employeeId, string $roleName)
+    public function assignRole(int $employeeId, string $roleName): Employee
     {
         $employee = Employee::findOrFail($employeeId);
-
         $employee->assignRole($roleName);
 
         return $employee->load('roles');
     }
 
-    public function removeRole(int $employeeId, string $roleName)
+    public function removeRole(int $employeeId, string $roleName): Employee
     {
         $employee = Employee::findOrFail($employeeId);
-
         $employee->removeRole($roleName);
 
         return $employee->load('roles');
