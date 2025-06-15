@@ -6,10 +6,12 @@ namespace App\Repositories;
 
 use App\Models\Task;
 use App\Interfaces\RepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TaskRepository implements RepositoryInterface
 {
-    public function getAll(array $filters = [], $pagination = true, $groupByStatus = false)
+    public function getAll(array $filters = [], bool $pagination = true, bool $groupByStatus = false): Collection|LengthAwarePaginator
     {
         $query = Task::query();
 
@@ -29,11 +31,9 @@ class TaskRepository implements RepositoryInterface
             $query->orderBy($filters['sort_by'], $filters['order']);
         }
 
-        if ($pagination) {
-            $tasks = $query->paginate(10);
-        } else {
-            $tasks = $query->get();
-        }
+        $query->with('employees');
+
+        $tasks = $pagination ? $query->paginate(10) : $query->get();
 
         if ($groupByStatus) {
             return $tasks->groupBy('status');
@@ -42,24 +42,24 @@ class TaskRepository implements RepositoryInterface
         return $tasks;
     }
 
-    public function find(int $id)
+    public function find(int $id): Task
     {
-        return Task::findOrFail($id);
+        return Task::with('employees')->findOrFail($id);
     }
 
-    public function create(array $data)
+    public function create(array $data): Task
     {
         return Task::create($data);
     }
 
-    public function update(int $id, array $data)
+    public function update(int $id, array $data): bool
     {
         Task::where('id', $id)->update($data);
 
         return true;
     }
 
-    public function delete(int $id)
+    public function delete(int $id): bool
     {
         Task::where('id', $id)->delete();
 

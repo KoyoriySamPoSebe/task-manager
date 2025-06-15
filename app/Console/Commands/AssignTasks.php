@@ -18,7 +18,7 @@ class AssignTasks extends Command
         parent::__construct();
     }
 
-    public function handle()
+    public function handle(): void
     {
         $unassignedTasks = Task::whereNull('employee_id')->get();
         $employees       = Employee::where('status', 'working')->get();

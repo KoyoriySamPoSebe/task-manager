@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Task;
-use App\Models\Employee;
 use App\Services\TaskService;
+use App\Http\Resources\TaskResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\RateLimiter;
 
 class TaskController extends Controller
 {
-    protected $taskService;
+    protected TaskService $taskService;
 
     public function __construct(TaskService $taskService)
     {
@@ -21,18 +20,17 @@ class TaskController extends Controller
         $this->taskService = $taskService;
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $filters       = $request->only(['status', 'assigned_to', 'start_date', 'end_date', 'sort_by', 'order']);
-        $pagination    = $request->get('pagination', true);
-        $groupByStatus = $request->get('group_by_status', false);
+        $filters    = $request->only(['status', 'assigned_to', 'start_date', 'end_date', 'sort_by', 'order']);
+        $pagination = $request->get('pagination', true);
 
-        $tasks = $this->taskService->getAll($filters, $pagination, $groupByStatus);
+        $tasks = $this->taskService->getAll($filters, $pagination);
 
-        return response()->json($tasks);
+        return response()->json(TaskResource::collection($tasks));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|max:255',
@@ -42,17 +40,17 @@ class TaskController extends Controller
 
         $task = $this->taskService->create($validated);
 
-        return response()->json($task, 201);
+        return response()->json(new TaskResource($task), 201);
     }
 
-    public function show(int $id)
+    public function show(int $id): JsonResponse
     {
         $task = $this->taskService->find($id);
 
-        return response()->json($task);
+        return response()->json(new TaskResource($task));
     }
 
-    public function update(Request $request, int $id)
+    public function update(Request $request, int $id): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|max:255',
@@ -65,14 +63,14 @@ class TaskController extends Controller
         return response()->json(null, 204);
     }
 
-    public function destroy(int $id)
+    public function destroy(int $id): JsonResponse
     {
         $this->taskService->delete($id);
 
         return response()->json(null, 204);
     }
 
-    public function assignEmployee(Request $request, int $taskId)
+    public function assignEmployee(Request $request, int $taskId): JsonResponse
     {
         $request->validate([
             'employee_id' => 'required|exists:employees,id',
@@ -85,7 +83,7 @@ class TaskController extends Controller
         return response()->json(null, 204);
     }
 
-    public function removeEmployee(int $taskId)
+    public function removeEmployee(int $taskId): JsonResponse
     {
         $this->taskService->removeEmployee($taskId);
 
